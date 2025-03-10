@@ -6,21 +6,29 @@ import seaborn as sns
 # Load dataset
 day_df = pd.read_csv("day.csv")
 hour_df = pd.read_csv("hour.csv")
+
 day_df['dteday'] = pd.to_datetime(day_df['dteday'])
+
+season_map = {1: "Spring", 2: "Summer", 3: "Fall", 4: "Winter"}
+weather_map = {1: "Clear", 2: "Cloudy", 3: "Light Rain/Snow", 4: "Heavy Rain/Snow"}
+
+day_df['season'] = day_df['season'].map(season_map)
+day_df['weathersit'] = day_df['weathersit'].map(weather_map)
 
 # Sidebar filter
 st.sidebar.header("Filter Data")
 selected_month = st.sidebar.slider("Pilih Bulan", min_value=1, max_value=12, value=(1, 12))
 selected_hour = st.sidebar.slider("Pilih Jam", min_value=0, max_value=23, value=(0, 23))
+selected_weekday = st.sidebar.multiselect("Pilih Hari dalam Seminggu", options=day_df['weekday'].unique(), default=day_df['weekday'].unique())
 
-filtered_day_df = day_df[(day_df['dteday'].dt.month >= selected_month[0]) & (day_df['dteday'].dt.month <= selected_month[1])]
+filtered_day_df = day_df[(day_df['dteday'].dt.month >= selected_month[0]) & (day_df['dteday'].dt.month <= selected_month[1]) & (day_df['weekday'].isin(selected_weekday))]
 filtered_hour_df = hour_df[(hour_df['hr'] >= selected_hour[0]) & (hour_df['hr'] <= selected_hour[1])]
 
 # Dashboard 
-st.title("Bike Sharing Dashboard")
-st.markdown("Dashboard menganalisis data peminjaman sepeda.")
+st.title("📊 Bike Sharing Dashboard")
+st.markdown("Dashboard interaktif untuk menganalisis data peminjaman sepeda.")
 
-st.subheader("Pola Peminjaman Berdasarkan Musim")
+st.subheader("🌿 Pola Peminjaman Berdasarkan Musim")
 fig, ax = plt.subplots(figsize=(8, 4))
 sns.barplot(x=filtered_day_df["season"], y=filtered_day_df["cnt"], hue=filtered_day_df["season"], palette="Set2", ax=ax)
 ax.set_xlabel("Musim")
@@ -29,7 +37,7 @@ ax.set_title("Pola Peminjaman Berdasarkan Musim")
 ax.grid(axis='y')
 st.pyplot(fig)
 
-st.subheader("Pola Peminjaman Berdasarkan Cuaca")
+st.subheader("🌦️ Pola Peminjaman Berdasarkan Cuaca")
 fig, ax = plt.subplots(figsize=(8, 4))
 sns.barplot(x=filtered_day_df["weathersit"], y=filtered_day_df["cnt"], hue=filtered_day_df["weathersit"], palette="Set3", ax=ax)
 ax.set_xlabel("Kondisi Cuaca")
@@ -38,7 +46,7 @@ ax.set_title("Pola Peminjaman Berdasarkan Cuaca ☀️")
 ax.grid(axis='y')
 st.pyplot(fig)
 
-st.subheader("Pola Peminjaman Berdasarkan Jam dalam Sehari")
+st.subheader("🕒 Pola Peminjaman Berdasarkan Jam dalam Sehari")
 fig, ax = plt.subplots(figsize=(8, 4))
 sns.lineplot(x=filtered_hour_df["hr"], y=filtered_hour_df["cnt"], color="b", marker="o", ax=ax)
 ax.set_xlabel("Jam dalam Sehari")
